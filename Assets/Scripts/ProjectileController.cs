@@ -115,6 +115,7 @@ public sealed class ProjectileController : MonoBehaviour
         if (shouldFlipX)
         {
             visualDirection.x = -visualDirection.x;
+            visualDirection.y = -visualDirection.y;
         }
 
         float angle = Mathf.Atan2(visualDirection.y, visualDirection.x) * Mathf.Rad2Deg;
