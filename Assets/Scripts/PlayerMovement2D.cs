@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public sealed class PlayerMovement2D : MonoBehaviour
 {
-    private const float MoveSpeed = 6f;
+    private const float MoveSpeed = 12f;
     private const float AxisTieTolerance = 0.001f;
 
     private static readonly int MoveXHash = Animator.StringToHash("moveX");
@@ -23,6 +23,8 @@ public sealed class PlayerMovement2D : MonoBehaviour
 
     private Animator animator;
     private Rigidbody2D body;
+    private BoxCollider2D hitbox;
+    private MapBoundaryController mapBoundary;
     private Vector2 moveInput;
     private Vector2 facing = Vector2.down;
     private Vector2 lastMoveDirection = Vector2.zero;
@@ -38,6 +40,7 @@ public sealed class PlayerMovement2D : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         body = GetComponent<Rigidbody2D>();
+        hitbox = GetComponent<BoxCollider2D>();
 
         body.gravityScale = 0f;
         body.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -64,7 +67,30 @@ public sealed class PlayerMovement2D : MonoBehaviour
     {
         Vector2 normalizedMove = moveInput.sqrMagnitude > 1f ? moveInput.normalized : moveInput;
         Vector2 targetPosition = body.position + (normalizedMove * MoveSpeed * Time.fixedDeltaTime);
+
+        if (TryGetMapBoundary(out MapBoundaryController boundary))
+        {
+            Vector2 padding = hitbox != null ? hitbox.bounds.extents : Vector2.zero;
+            targetPosition = boundary.ClampPoint(targetPosition, padding);
+        }
+
         body.MovePosition(targetPosition);
+    }
+
+    private bool TryGetMapBoundary(out MapBoundaryController boundary)
+    {
+        if (mapBoundary == null)
+        {
+            mapBoundary = MapBoundaryController.Instance;
+
+            if (mapBoundary == null)
+            {
+                mapBoundary = FindAnyObjectByType<MapBoundaryController>();
+            }
+        }
+
+        boundary = mapBoundary;
+        return boundary != null;
     }
 
     private void CacheAnimatorParameters()
