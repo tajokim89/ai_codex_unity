@@ -6,26 +6,34 @@ public sealed class MapBoundaryController : MonoBehaviour
 {
     public static MapBoundaryController Instance { get; private set; }
 
-    private BoxCollider2D boundaryCollider;
+    [SerializeField] private BoxCollider2D boundaryCollider;
 
     public Bounds WorldBounds => boundaryCollider.bounds;
 
     private void Reset()
     {
         CacheCollider();
-        boundaryCollider.isTrigger = true;
+        EnsureTriggerCollider();
+    }
+
+    private void OnValidate()
+    {
+        CacheCollider();
+        EnsureTriggerCollider();
     }
 
     private void Awake()
     {
         CacheCollider();
-        Instance = this;
+        EnsureTriggerCollider();
+        RegisterInstance();
     }
 
     private void OnEnable()
     {
         CacheCollider();
-        Instance = this;
+        EnsureTriggerCollider();
+        RegisterInstance();
     }
 
     private void OnDisable()
@@ -69,5 +77,27 @@ public sealed class MapBoundaryController : MonoBehaviour
         {
             boundaryCollider = GetComponent<BoxCollider2D>();
         }
+    }
+
+    private void EnsureTriggerCollider()
+    {
+        if (boundaryCollider != null)
+        {
+            boundaryCollider.isTrigger = true;
+        }
+    }
+
+    private void RegisterInstance()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogError(
+                "Multiple MapBoundaryController instances are active. Keep only one shared boundary controller in the scene.",
+                this);
+            enabled = false;
+            return;
+        }
+
+        Instance = this;
     }
 }
