@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public sealed class PlayerMovement2D : MonoBehaviour
 {
-    private const float MoveSpeed = 3.5f;
+    private const float MoveSpeed = 6f;
     private const float AxisTieTolerance = 0.001f;
 
     private static readonly int MoveXHash = Animator.StringToHash("moveX");
@@ -25,10 +25,14 @@ public sealed class PlayerMovement2D : MonoBehaviour
     private Rigidbody2D body;
     private Vector2 moveInput;
     private Vector2 facing = Vector2.down;
+    private Vector2 lastMoveDirection = Vector2.zero;
     private int currentStateHash;
     private bool hasMoveXParameter;
     private bool hasMoveYParameter;
     private bool hasIsMovingParameter;
+
+    public Vector2 LastMoveDirection => lastMoveDirection;
+    public Vector2 CurrentMoveInput => moveInput;
 
     private void Awake()
     {
@@ -49,6 +53,7 @@ public sealed class PlayerMovement2D : MonoBehaviour
 
         if (moveInput != Vector2.zero)
         {
+            lastMoveDirection = moveInput.normalized;
             facing = ResolveFacing(moveInput, facing);
         }
 
